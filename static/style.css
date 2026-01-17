@@ -377,40 +377,80 @@ footer {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-
 }
+/* Добавьте в конец файла static/style.css */
+
+/* Стили для уведомлений */
+.alert {
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideDown 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.alert.success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.alert.error {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.alert strong {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.alert button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.alert button:hover {
+    opacity: 1;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Анимация для трафика */
-@keyframes trafficPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
 }
 
 .traffic-updating {
-    animation: trafficPulse 1s infinite;
-    display: inline-block;
+    animation: pulse 0.5s ease-in-out;
 }
 
-/* Стили для счетчиков трафика */
-.stat-value#uploadStats,
-.stat-value#downloadStats {
-    font-family: 'Courier New', monospace;
-    font-weight: bold;
-    color: #2a5298;
-    transition: all 0.3s ease;
+/* Загрузка */
+.fa-spinner {
+    animation: spin 1s linear infinite;
 }
 
-.stat-value#uploadStats.traffic-updating {
-    color: #10b981;
-}
-
-.stat-value#downloadStats.traffic-updating {
-    color: #3b82f6;
-}
-
-/* Иконки трафика */
-.stat-label i {
-    margin-right: 8px;
-    width: 20px;
-    text-align: center;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
