@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: vpn-dashboard
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --worker-class eventlet -w 1 wsgi:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+    healthCheckPath: /services:
+  - type: web
+    name: vpn-dashboard
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --worker-class eventlet -w 1 wsgi:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+    healthCheckPath: /

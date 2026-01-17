@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My VPN Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- Уведомления -->
+        <div id="alert" class="alert" style="display: none;"></div>
+
+        <!-- Загрузчик -->
+        <div id="loader" class="loader" style="display: none;"></div>
+
+        <header>
+            <h1><i class="fas fa-shield-alt"></i> My VPN Dashboard</h1>
+            <div class="status-indicator" id="statusIndicator">
+                <span class="status-dot"></span>
+                <span id="statusText">Проверка...</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="dashboard">
+                <!-- Карточка статуса -->
+                <div class="stats-card">
+                    <h3><i class="fas fa-network-wired"></i> Статус подключения</h3>
+                    <div class="stats-content">
+                        <div class="stat-item">
+                            <span class="stat-label">Статус:</span>
+                            <span class="stat-value" id="connectionStatus">Отключен</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Сервер:</span>
+                            <span class="stat-value" id="serverName">Не выбран</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Ваш IP:</span>
+                            <span class="stat-value" id="ipAddress">Загрузка...</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Время работы:</span>
+                            <span class="stat-value" id="uptime">00:00:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Карточка трафика -->
+                <div class="stats-card">
+                    <h3><i class="fas fa-tachometer-alt"></i> Использование трафика</h3>
+                    <div class="stats-content">
+                        <div class="stat-item">
+                            <span class="stat-label"><i class="fas fa-upload"></i> Отправлено:</span>
+                            <span class="stat-value" id="uploadStats">0 KB</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label"><i class="fas fa-download"></i> Получено:</span>
+                            <span class="stat-value" id="downloadStats">0 KB</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label"><i class="fas fa-bolt"></i> Метод:</span>
+                            <span class="stat-value" id="method">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Карточка управления -->
+                <div class="control-card">
+                    <h3><i class="fas fa-server"></i> Выбор сервера</h3>
+                    <div class="server-list" id="serverList">
+                        <!-- Серверы загружаются через JavaScript -->
+                    </div>
+
+                    <div class="vpn-controls">
+                        <button id="connectBtn" class="btn btn-connect">
+                            <i class="fas fa-plug"></i> Подключиться
+                        </button>
+                        <button id="disconnectBtn" class="btn btn-disconnect" disabled>
+                            <i class="fas fa-power-off"></i> Отключиться
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Карточка конфигурации -->
+                <div class="config-card">
+                    <h3><i class="fas fa-cog"></i> Конфигурация</h3>
+                    <button id="showConfigBtn" class="btn btn-config">
+                        <i class="fas fa-qrcode"></i> WireGuard Config
+                    </button>
+                    <div id="configSection" style="display: none;">
+                        <textarea id="configText" rows="8" readonly></textarea>
+                        <div id="qrcode"></div>
+                        <p style="text-align: center; margin-top: 10px; color: #666; font-size: 12px;">
+                            Отсканируйте QR код в WireGuard приложении
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p><i class="fas fa-shield-alt"></i> My VPN Dashboard &copy; 2024 | Защищенное подключение</p>
+            <p style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+                Используется демонстрационный режим. Для реального VPN нужен отдельный сервер.
+            </p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+    <script>
+        let currentStatus = null;
+        let selectedServer = 'ssh-tunnel';
+        let statusUpdateInterval;
+
+        // Показать уведомление
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            alert.style.display = 'block';
+
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Показать/скрыть загрузчик
+        function showLoader(show) {
+            document.getElementById('loader').style.display = show ? 'block' : 'none';
+        }
+
+        // Форматирование времени
+        function formatUptime(startTime) {
+            if (!startTime) return '00:00:00';
+
+            const start = new Date(startTime);
+            const now = new Date();
+            const diff = Math.floor((now - start) / 1000);
+
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = diff % 60;
+
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Обновление статуса
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/vpn/status');
+                if (!response.ok) throw new Error('Ошибка сети');
+
+                const data = await response.json();
+                currentStatus = data;
+
+                // Обновляем UI
+                document.getElementById('connectionStatus').textContent =
+                    data.connected ? 'Подключен' : 'Отключен';
+                document.getElementById('serverName').textContent =
+                    data.server || 'Не выбран';
+                document.getElementById('ipAddress').textContent =
+                    data.public_ip || 'Неизвестно';
+                document.getElementById('uploadStats').textContent =
+                    data.upload || '0 B';
+                document.getElementById('downloadStats').textContent =
+                    data.download || '0 B';
+                document.getElementById('method').textContent =
+                    data.method || '-';
+                document.getElementById('uptime').textContent =
+                    formatUptime(data.start_time);
+
+                // Обновляем индикатор
+                const indicator = document.getElementById('statusIndicator');
+                const statusText = document.getElementById('statusText');
+                const connectBtn = document.getElementById('connectBtn');
+                const disconnectBtn = document.getElementById('disconnectBtn');
+
+                if (data.connected) {
+                    indicator.classList.add('connected');
+                    statusText.textContent = 'Защищено';
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+                } else {
+                    indicator.classList.remove('connected');
+                    statusText.textContent = 'Не защищено';
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+                }
+
+            } catch (error) {
+                console.error('Ошибка обновления статуса:', error);
+                showAlert('Ошибка загрузки статуса', 'error');
+            }
+        }
+
+        // Загрузка списка серверов
+        async function loadServers() {
+            try {
+                const response = await fetch('/api/servers');
+                if (!response.ok) throw new Error('Ошибка сети');
+
+                const data = await response.json();
+                const serverList = document.getElementById('serverList');
+                serverList.innerHTML = '';
+
+                data.servers.forEach(server => {
+                    const serverElement = document.createElement('div');
+                    serverElement.className = 'server-item';
+                    serverElement.innerHTML = `
+                        <input type="radio" name="server" id="server_${server.id}"
+                               value="${server.id}" ${selectedServer === server.id ? 'checked' : ''}>
+                        <label for="server_${server.id}">
+                            <strong>${server.name}</strong>
+                            <span>${server.location} <span class="server-type">${server.type}</span></span>
+                        </label>
+                    `;
+
+                    serverElement.querySelector('input').addEventListener('change', (e) => {
+                        if (e.target.checked) {
+                            selectedServer = e.target.value;
+                        }
+                    });
+
+                    serverList.appendChild(serverElement);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки серверов:', error);
+                showAlert('Ошибка загрузки списка серверов', 'error');
+            }
+        }
+
+        // Подключение к VPN
+        document.getElementById('connectBtn').addEventListener('click', async () => {
+            showLoader(true);
+
+            try {
+                const response = await fetch('/api/vpn/connect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ server: selectedServer })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('VPN успешно подключен!');
+                    await updateStatus();
+                } else {
+                    showAlert('Ошибка подключения: ' + (data.message || 'Неизвестная ошибка'), 'error');
+                }
+            } catch (error) {
+                showAlert('Ошибка сети: ' + error.message, 'error');
+            } finally {
+                showLoader(false);
+            }
+        });
+
+        // Отключение от VPN
+        document.getElementById('disconnectBtn').addEventListener('click', async () => {
+            if (!confirm('Вы уверены, что хотите отключиться от VPN?')) return;
+
+            showLoader(true);
+
+            try {
+                const response = await fetch('/api/vpn/disconnect', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('VPN отключен!');
+                    await updateStatus();
+                } else {
+                    showAlert('Ошибка отключения: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Ошибка сети: ' + error.message, 'error');
+            } finally {
+                showLoader(false);
+            }
+        });
+
+        // Показать конфиг
+        document.getElementById('showConfigBtn').addEventListener('click', async () => {
+            const configSection = document.getElementById('configSection');
+            if (configSection.style.display === 'none') {
+                try {
+                    const response = await fetch('/api/vpn/config');
+                    const data = await response.json();
+
+                    document.getElementById('configText').value = data.config;
+
+                    // Генерация QR кода
+                    const qrcodeDiv = document.getElementById('qrcode');
+                    qrcodeDiv.innerHTML = '';
+                    QRCode.toCanvas(qrcodeDiv, data.config, {
+                        width: 200,
+                        margin: 1,
+                        color: {
+                            dark: '#2a5298',
+                            light: '#ffffff'
+                        }
+                    }, function(error) {
+                        if (error) {
+                            console.error('QR Code error:', error);
+                            qrcodeDiv.innerHTML = '<p style="color: #666;">Не удалось сгенерировать QR код</p>';
+                        }
+                    });
+
+                    configSection.style.display = 'block';
+                } catch (error) {
+                    showAlert('Ошибка загрузки конфигурации', 'error');
+                }
+            } else {
+                configSection.style.display = 'none';
+            }
+        });
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Загружаем начальные данные
+            await Promise.all([updateStatus(), loadServers()]);
+
+            // Автоматическое обновление статуса каждые 10 секунд
+            statusUpdateInterval = setInterval(updateStatus, 10000);
+
+            // Обновляем статистику трафика каждые 3 секунды если подключены
+            setInterval(() => {
+                if (currentStatus && currentStatus.connected) {
+                    // Имитация обновления трафика
+                    const upload = document.getElementById('uploadStats');
+                    const download = document.getElementById('downloadStats');
+
+                    if (upload && download) {
+                        const currentUp = parseInt(upload.textContent) || 0;
+                        const currentDown = parseInt(download.textContent) || 0;
+
+                        upload.textContent = `${currentUp + Math.floor(Math.random() * 10)} KB`;
+                        download.textContent = `${currentDown + Math.floor(Math.random() * 50)} KB`;
+                    }
+                }
+            }, 3000);
+        });
+
+        // Очистка интервалов при закрытии страницы
+        window.addEventListener('beforeunload', () => {
+            if (statusUpdateInterval) {
+                clearInterval(statusUpdateInterval);
+            }
+        });
+    </script>
+</body>
+</html>
