@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kildear VPN — Безопасный и быстрый VPN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #fafbfc;
+            color: #0b1a33;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ----- АНИМАЦИИ ----- */
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.3); }
+            70% { box-shadow: 0 0 0 14px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ----- ШАПКА (НАВИГАЦИЯ) ----- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            padding: 14px 0;
+            transition: box-shadow 0.3s;
+        }
+        header.scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 24px;
+            letter-spacing: -0.5px;
+            color: #0b1a33;
+            text-decoration: none;
+        }
+        .logo-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .logo span {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav a {
+            color: #1e293b;
+            text-decoration: none;
+            margin-left: 28px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: color 0.2s;
+            position: relative;
+        }
+        .nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #6366f1;
+            transition: width 0.3s;
+        }
+        .nav a:hover {
+            color: #6366f1;
+        }
+        .nav a:hover::after {
+            width: 100%;
+        }
+        .nav .btn-small {
+            background: #0b1a33;
+            color: #fff;
+            padding: 8px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s, transform 0.2s;
+            margin-left: 28px;
+        }
+        .nav .btn-small:hover {
+            background: #1e2a4a;
+            transform: scale(1.02);
+        }
+        .nav .btn-small::after { display: none; }
+
+        /* ----- ГЕРОЙ ----- */
+        .hero {
+            padding: 60px 0 40px;
+            text-align: center;
+            animation: fadeUp 0.9s ease forwards;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.12);
+            color: #6366f1;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 6px 18px;
+            border-radius: 40px;
+            margin-bottom: 24px;
+            letter-spacing: 0.3px;
+        }
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 19px;
+            color: #475569;
+            max-width: 580px;
+            margin: 0 auto 32px;
+        }
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+        }
+        .btn-primary {
+            display: inline-block;
+            background: #0b1a33;
+            color: #fff;
+            padding: 14px 40px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 17px;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 24px rgba(11, 26, 51, 0.15);
+        }
+        .btn-primary:hover {
+            background: #1e2a4a;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(11, 26, 51, 0.2);
+        }
+        .btn-secondary {
+            display: inline-block;
+            background: transparent;
+            color: #0b1a33;
+            padding: 14px 40px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 17px;
+            text-decoration: none;
+            border: 2px solid #e2e8f0;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .btn-secondary:hover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.04);
+        }
+
+        /* ----- ТАРИФЫ ----- */
+        .pricing {
+            padding: 70px 0 80px;
+        }
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .pricing-header h2 {
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        .pricing-header p {
+            color: #475569;
+            font-size: 18px;
+            margin-top: 8px;
+        }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 24px;
+            align-items: stretch;
+        }
+        .pricing-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 32px 22px 28px;
+            text-align: center;
+            border: 1px solid #eef2f6;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.06);
+            border-color: #c7d2fe;
+        }
+        .pricing-card.popular {
+            border: 2px solid #6366f1;
+            background: #fafbff;
+            position: relative;
+        }
+        .pricing-card.popular::before {
+            content: '🔥 Самый популярный';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #6366f1;
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 4px 18px;
+            border-radius: 40px;
+            white-space: nowrap;
+        }
+        .pricing-card .days {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .pricing-card .price {
+            font-size: 42px;
+            font-weight: 800;
+            color: #0b1a33;
+            margin: 10px 0 4px;
+        }
+        .pricing-card .price span {
+            font-size: 18px;
+            font-weight: 400;
+            color: #64748b;
+        }
+        .pricing-card .devices {
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 16px;
+        }
+        .pricing-card .devices i {
+            font-style: normal;
+            background: #f1f4f9;
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-weight: 500;
+        }
+        .pricing-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 12px 0 22px;
+            text-align: left;
+            flex-grow: 1;
+        }
+        .pricing-card ul li {
+            padding: 6px 0;
+            font-size: 14px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #f1f4f9;
+        }
+        .pricing-card ul li:last-child { border-bottom: none; }
+        .pricing-card ul li::before {
+            content: '✓';
+            color: #6366f1;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .btn-card {
+            display: inline-block;
+            background: #0b1a33;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.2s;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-card:hover {
+            background: #1e2a4a;
+            transform: scale(1.02);
+        }
+        .btn-card-outline {
+            background: transparent;
+            color: #0b1a33;
+            border: 2px solid #e2e8f0;
+        }
+        .btn-card-outline:hover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.04);
+        }
+
+        /* ----- ПРЕИМУЩЕСТВА (FEATURES) ----- */
+        .features {
+            padding: 50px 0 70px;
+            background: #ffffff;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 32px;
+            text-align: center;
+        }
+        .feature-item .icon {
+            font-size: 44px;
+            display: inline-block;
+            animation: float 4s ease-in-out infinite;
+        }
+        .feature-item:nth-child(2) .icon { animation-delay: 0.6s; }
+        .feature-item:nth-child(3) .icon { animation-delay: 1.2s; }
+        .feature-item:nth-child(4) .icon { animation-delay: 0.3s; }
+        .feature-item h3 {
+            font-size: 20px;
+            margin: 12px 0 4px;
+            font-weight: 600;
+        }
+        .feature-item p {
+            color: #475569;
+            font-size: 15px;
+        }
+
+        /* ----- CTA (ПРИЗЫВ) ----- */
+        .cta {
+            padding: 60px 0;
+            background: linear-gradient(135deg, #0b1a33 0%, #1e2a4a 100%);
+            color: #fff;
+            text-align: center;
+            border-radius: 40px;
+            margin: 0 24px 60px;
+        }
+        .cta h2 {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .cta p {
+            opacity: 0.8;
+            font-size: 18px;
+            margin: 12px 0 28px;
+        }
+        .cta .btn-primary {
+            background: #fff;
+            color: #0b1a33;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        .cta .btn-primary:hover {
+            background: #f1f4f9;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ----- ФУТЕР (ВСЕ ТРЕБОВАНИЯ LAVA) ----- */
+        footer {
+            background: #0b1a33;
+            color: #e2e8f0;
+            padding: 48px 0 24px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 36px;
+            margin-bottom: 32px;
+        }
+        .footer-grid h4 {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+        .footer-grid p, .footer-grid a {
+            color: #94a3b8;
+            font-size: 14px;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 6px;
+            transition: color 0.2s;
+        }
+        .footer-grid a:hover {
+            color: #fff;
+        }
+        .footer-bottom {
+            border-top: 1px solid #1e2a4a;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+        }
+        .footer-bottom a {
+            color: #94a3b8;
+            text-decoration: none;
+        }
+        .footer-bottom a:hover {
+            color: #fff;
+        }
+
+        /* ----- АДАПТИВНОСТЬ ----- */
+        @media (max-width: 900px) {
+            .hero h1 { font-size: 38px; }
+            .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .header-inner { flex-direction: column; align-items: stretch; text-align: center; }
+            .nav a { margin: 0 12px; font-size: 14px; }
+            .nav .btn-small { margin: 8px auto 0; display: inline-block; width: auto; }
+            .hero h1 { font-size: 30px; }
+            .hero p { font-size: 16px; }
+            .pricing-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+            .pricing-card { padding: 22px 14px 20px; }
+            .pricing-card .price { font-size: 32px; }
+            .pricing-card ul li { font-size: 13px; }
+            .cta { margin: 0 12px 40px; padding: 40px 20px; }
+            .cta h2 { font-size: 26px; }
+            .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+        }
+        @media (max-width: 420px) {
+            .pricing-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Скрытые блоки для страниц-заглушек (для модерации) */
+        .page-placeholder {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ====== ШАПКА ====== -->
+<header id="header">
+    <div class="container header-inner">
+        <a href="#" class="logo">
+            <span class="logo-icon">K</span>
+            Kildear<span>VPN</span>
+        </a>
+        <nav class="nav">
+            <a href="#pricing">Тарифы</a>
+            <a href="#features">Преимущества</a>
+            <a href="#contacts">Контакты</a>
+            <a href="https://t.me/ваш_бот_username" class="btn-small">Telegram-бот</a>
+        </nav>
+    </div>
+</header>
+
+<!-- ====== ГЕРОЙ ====== -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-badge">⚡ Быстро. Надёжно. Безопасно.</div>
+        <h1>Kildear VPN — ваш <span>цифровой щит</span></h1>
+        <p>Защищаем данные, открываем контент и даём свободу в интернете. Без логов и замедлений.</p>
+        <div class="hero-actions">
+            <a href="#pricing" class="btn-primary">Выбрать тариф</a>
+            <a href="#features" class="btn-secondary">Узнать больше</a>
+        </div>
+    </div>
+</section>
+
+<!-- ====== ТАРИФЫ ====== -->
+<section class="pricing" id="pricing">
+    <div class="container">
+        <div class="pricing-header animate-on-scroll">
+            <h2>Доступные подписки</h2>
+            <p>Выберите идеальный тариф для себя и своей семьи</p>
+        </div>
+        <div class="pricing-grid">
+            <!-- 7 дней / 1 устройство -->
+            <div class="pricing-card animate-on-scroll">
+                <div class="days">7 дней</div>
+                <div class="price">49 <span>₽</span></div>
+                <div class="devices"><i>📱 1 устройство</i></div>
+                <ul>
+                    <li>Доступ к контенту</li>
+                    <li>Скорость до 100 Мбит/с</li>
+                </ul>
+                <a href="https://t.me/ваш_бот_username?start=7d" class="btn-card">Купить</a>
+            </div>
+
+            <!-- 14 дней / 2 устройства (популярный) -->
+            <div class="pricing-card popular animate-on-scroll">
+                <div class="days">14 дней</div>
+                <div class="price">89 <span>₽</span></div>
+                <div class="devices"><i>📱📱 2 устройства</i></div>
+                <ul>
+                    <li>Доступ к контенту</li>
+                    <li>Скорость до 150 Мбит/с</li>
+                    <li>Поддержка 24/7</li>
+                </ul>
+                <a href="https://t.me/ваш_бот_username?start=14d" class="btn-card">Купить</a>
+            </div>
+
+            <!-- Месяц / 2 устройства -->
+            <div class="pricing-card animate-on-scroll">
+                <div class="days">1 месяц</div>
+                <div class="price">139 <span>₽</span></div>
+                <div class="devices"><i>📱📱 2 устройства</i></div>
+                <ul>
+                    <li>Доступ к контенту</li>
+                    <li>Скорость до 150 Мбит/с</li>
+                    <li>Поддержка 24/7</li>
+                </ul>
+                <a href="https://t.me/ваш_бот_username?start=1m" class="btn-card btn-card-outline">Купить</a>
+            </div>
+
+            <!-- 3 месяца / 3 устройства -->
+            <div class="pricing-card animate-on-scroll">
+                <div class="days">3 месяца</div>
+                <div class="price">469 <span>₽</span></div>
+                <div class="devices"><i>📱📱📱 3 устройства</i></div>
+                <ul>
+                    <li>Доступ к контенту</li>
+                    <li>Скорость до 200 Мбит/с</li>
+                    <li>Поддержка 24/7</li>
+                    <li>Экономия 30%</li>
+                </ul>
+                <a href="https://t.me/ваш_бот_username?start=3m" class="btn-card btn-card-outline">Купить</a>
+            </div>
+
+            <!-- Год / 5 устройств -->
+            <div class="pricing-card animate-on-scroll">
+                <div class="days">1 год</div>
+                <div class="price">899 <span>₽</span></div>
+                <div class="devices"><i>📱📱📱📱📱 5 устройств</i></div>
+                <ul>
+                    <li>Доступ к контенту</li>
+                    <li>Скорость до 300 Мбит/с</li>
+                    <li>Поддержка 24/7</li>
+                    <li>Экономия 45%</li>
+                </ul>
+                <a href="https://t.me/ваш_бот_username?start=1y" class="btn-card btn-card-outline">Купить</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====== ПРЕИМУЩЕСТВА ====== -->
+<section class="features" id="features">
+    <div class="container">
+        <div class="pricing-header animate-on-scroll">
+            <h2>Почему выбирают Kildear VPN</h2>
+            <p>Всё, что нужно для комфортной и безопасной работы в сети</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-item animate-on-scroll">
+                <div class="icon">🔒</div>
+                <h3>Безопасность</h3>
+                <p>Шифрование трафика. Мы не храним логи.</p>
+            </div>
+            <div class="feature-item animate-on-scroll">
+                <div class="icon">🚀</div>
+                <h3>Высокая скорость</h3>
+                <p>Современные протоколы и оптимизация.</p>
+            </div>
+            <div class="feature-item animate-on-scroll">
+                <div class="icon">🌍</div>
+                <h3>Доступ к контенту</h3>
+                <p>Обходите географические блокировки.</p>
+            </div>
+            <div class="feature-item animate-on-scroll">
+                <div class="icon">💬</div>
+                <h3>Поддержка 24/7</h3>
+                <p>Поможем с настройкой в любое время.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====== CTA ====== -->
+<section class="cta animate-on-scroll">
+    <div class="container">
+        <h2>Готовы к защите?</h2>
+        <p>Начните пользоваться Kildear VPN уже сегодня. Просто нажмите на кнопку.</p>
+        <a href="https://t.me/ваш_бот_username" class="btn-primary">Перейти в бота →</a>
+    </div>
+</section>
+
+<!-- ====== ФУТЕР (ВСЕ ТРЕБОВАНИЯ LAVA) ====== -->
+<footer id="contacts">
+    <div class="container">
+        <div class="footer-grid">
+            <div>
+                <h4>📬 Контакты</h4>
+                <p>📧 support@kildearvpn.ru</p>
+                <p>📞 +7 (XXX) XXX-XX-XX</p>
+                <p>📍 Москва, ул. Примерная, д. 1</p>
+                <p>🕐 Поддержка: 10:00–20:00 (МСК)</p>
+            </div>
+            <div>
+                <h4>📄 Документы</h4>
+                <a href="#privacy">Политика конфиденциальности</a>
+                <a href="#offer">Договор оферты</a>
+                <a href="#refund">Условия возврата</a>
+                <a href="#license">Лицензия ПО</a>
+            </div>
+            <div>
+                <h4>ℹ️ О сервисе</h4>
+                <a href="#about">О нас</a>
+                <a href="#faq">FAQ</a>
+                <a href="https://t.me/ваш_бот_username" target="_blank">🤖 Telegram-бот</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2025 Kildear VPN. Все права защищены. ПО с открытой лицензией (MIT).
+            <br />
+            <a href="#privacy">Политика конфиденциальности</a> ·
+            <a href="#offer">Договор оферты</a> ·
+            <a href="#refund">Возврат</a>
+        </div>
+    </div>
+</footer>
+
+<!-- ====== СТРАНИЦЫ-ЗАГЛУШКИ ДЛЯ МОДЕРАЦИИ ====== -->
+<div class="page-placeholder" id="privacy">
+    <h1>Политика конфиденциальности</h1>
+    <p>Мы собираем только ваш email и Telegram ID для предоставления услуги. Данные не передаются третьим лицам. Срок хранения — 3 года. Вы можете запросить удаление данных в любой момент.</p>
+</div>
+<div class="page-placeholder" id="offer">
+    <h1>Договор оферты</h1>
+    <p>Настоящий договор является публичной офертой. Оплата означает полное согласие с условиями. Услуга предоставляется в момент активации ключа. Мы оставляем за собой право изменять условия с уведомлением пользователей.</p>
+</div>
+<div class="page-placeholder" id="refund">
+    <h1>Условия возврата</h1>
+    <p>Возврат средств возможен в течение 24 часов с момента покупки, если ключ не был активирован. Для возврата напишите в службу поддержки. Возврат осуществляется в течение 3 рабочих дней.</p>
+</div>
+<div class="page-placeholder" id="license">
+    <h1>Лицензия ПО</h1>
+    <p>Используется ПО на основе Xray-core. Лицензия MIT: <a href="https://github.com/XTLS/Xray-core/blob/main/LICENSE" target="_blank">https://github.com/XTLS/Xray-core/blob/main/LICENSE</a></p>
+</div>
+<div class="page-placeholder" id="about">
+    <h1>О нас</h1>
+    <p>Kildear VPN — это сервис для безопасного и анонимного доступа в интернет. Мы не храним логи и не передаем данные третьим лицам. Наша цель — сделать интернет свободным и безопасным для каждого.</p>
+</div>
+<div class="page-placeholder" id="faq">
+    <h1>FAQ</h1>
+    <p><strong>Как получить ключ?</strong> — После оплаты в Telegram-боте вы получите ссылку для подключения.</p>
+    <p><strong>Сколько устройств можно подключить?</strong> — Зависит от тарифа, от 1 до 5 устройств.</p>
+    <p><strong>Есть ли ограничение по трафику?</strong> — Нет, трафик безлимитный.</p>
+</div>
+
+<!-- ====== СКРИПТ ДЛЯ АНИМАЦИЙ ПРИ СКРОЛЛЕ ====== -->
+<script>
+    // Анимация появления при скролле
+    const animateElements = document.querySelectorAll('.animate-on-scroll');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.15 });
+
+    animateElements.forEach(el => observer.observe(el));
+
+    // Эффект тени для шапки при скролле
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+</script>
+
+</body>
+</html>
